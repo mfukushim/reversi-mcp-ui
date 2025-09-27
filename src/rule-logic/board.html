@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reversi - Single HTML (Responsive)</title>
+  <style>
+    :root{
+      --gap: clamp(2px, 1.2vw, 10px);
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif; background:#fafafa; color:#222; }
+    .wrap{ max-width: 720px; margin: 0 auto; padding: 12px; }
+    .header{ display:flex; gap:12px; align-items:center; justify-content:space-between; margin: 10px 0; flex-wrap:wrap;}
+    .badge{ background:#e3f2fd; border-radius:999px; padding:6px 10px; font-weight:600; }
+    .counts{ display:flex; gap:8px; align-items:center; }
+    .counts .disc{ width:16px; height:16px; border-radius:50%; box-shadow: inset 0 2px 4px rgba(0,0,0,.35); }
+    .counts .disc.b{ background:#111; }
+    .counts .disc.w{ background:#f7f7f7; border:1px solid rgba(0,0,0,.15); }
+    .board{
+      width: 100%;
+      aspect-ratio: 1 / 1;           /* 正方形を維持 */
+      background: #174d1b;
+      padding: var(--gap);
+      border-radius: 12px;
+      box-shadow: 0 8px 18px rgba(0,0,0,.08), inset 0 0 0 2px rgba(255,255,255,.08);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: var(--gap);
+      width: 100%; height: 100%;
+    }
+    .cell{
+      position: relative;
+      background: linear-gradient(135deg, #2f7d32, #266628);
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,.15);
+      cursor: pointer;
+      outline: none;
+    }
+    .cell:hover{ filter: brightness(1.06); }
+    .cell:focus-visible{ box-shadow: 0 0 0 3px #ffc107, inset 0 0 0 2px rgba(0,0,0,.2); }
+    .disc{
+      position:absolute; inset: 12%; border-radius: 50%;
+      box-shadow: inset 0 6px 10px rgba(0,0,0,.35), 0 3px 8px rgba(0,0,0,.2);
+      opacity:1; transform: scale(1);
+    }
+    .disc.B{ background:#111; }
+    .disc.W{ background:#f7f7f7; border:1px solid rgba(0,0,0,.1); }
+    .hint{ position:absolute; inset: 38%; border-radius: 50%; background: rgba(0,0,0,.18); box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+    @keyframes appear { from { transform:scale(0); opacity:0; } to { transform:scale(1); opacity:1; } }
+    .disc.appear{ animation: appear .3s ease-out; }
+
+    #toast{
+      position:fixed; left:50%; top: 18px; transform: translateX(-50%);
+      background:#333; color:#fff; padding:6px 12px; border-radius: 8px;
+      font-size:14px; opacity:0; transition: opacity .25s; pointer-events:none;
+      box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    }
+    #toast.show{ opacity:1; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="badge" id="turnBadge">手番: -</div>
+    <div class="counts">
+      <span class="disc b"></span><strong id="countB">0</strong>
+      <span style="color:#999">:</span>
+      <span class="disc w"></span><strong id="countW">0</strong>
+    </div>
+  </div>
+  <div class="board">
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+<div id="toast">取れません</div>
+
+<!-- （任意）外部から初期状態を与えたい場合は、この JSON を差し替えてください
+{ "board":"...................WB......BW............................", "to":"B" }
+ -->
+<!--
+<script id="initial-state" type="application/json">
+  {{initialState}}
+</script>
+-->
+
+<script>
+  const gameSession = '{{gameSession}}';
+  /*** ReversiEngine（import対応） ***/
+  class ReversiEngine {
+    constructor(){ this.init(); }
+    init(){
+      this.b = Array(64).fill(".");
+      // 初期配置
+      this.b[27] = "W"; this.b[28] = "B";
+      this.b[35] = "B"; this.b[36] = "W";
+      this.to = "B";
+      return this.export();
+    }
+    import(state){
+      if (!state || typeof state.board !== "string" || state.board.length !== 64) {
+        throw new Error("board は64文字の文字列である必要があります");
+      }
+      if (state.to !== "B" && state.to !== "W") {
+        throw new Error("to は 'B' または 'W'");
+      }
+      const arr = [];
+      for (let i=0;i<64;i++){
+        const ch = state.board[i];
+        if (ch !== "." && ch !== "B" && ch !== "W") throw new Error("board に不正な文字があります");
+        arr.push(ch);
+      }
+      this.b = arr;
+      this.to = state.to;
+      return this.export();
+    }
+    export(){
+      const {black,white} = this.counts();
+      return { board: this.b.join(""), to: this.to, legal: this.legalMoves(this.to), black, white };
+    }
+    opp(c){ return c==="B" ? "W" : "B"; }
+    idx(coord){ return (coord.charCodeAt(1)-49)*8 + (coord.charCodeAt(0)-65); }
+    rc(i){ return [Math.floor(i/8), i%8]; }
+    coord(i){ return String.fromCharCode(65+(i%8)) + String.fromCharCode(49+Math.floor(i/8)); }
+    counts(){
+      let b=0,w=0; for(const x of this.b){ if(x==="B") b++; else if (x==="W") w++; } return {black:b,white:w};
+    }
+    legalMoves(color){
+      const res=[]; for(let i=0;i<64;i++){ if(this.b[i]!==".") continue;
+        if(this.flips(i,color).length>0) res.push(this.coord(i));
+      } return res;
+    }
+    flips(i,color){
+      if(this.b[i]!==".") return [];
+      const [r,c]=this.rc(i), opp=this.opp(color);
+      const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+      const res=[];
+      for(const [dr,dc] of dirs){
+        let rr=r+dr, cc=c+dc; const tmp=[];
+        while(rr>=0&&rr<8&&cc>=0&&cc<8 && this.b[rr*8+cc]===opp){ tmp.push(rr*8+cc); rr+=dr; cc+=dc; }
+        if(rr>=0&&rr<8&&cc>=0&&cc<8 && this.b[rr*8+cc]===color && tmp.length) res.push(...tmp);
+      }
+      return res;
+    }
+    play(coord){
+      if (coord==="PASS"){
+        const leg=this.legalMoves(this.to);
+        if(leg.length) return {ok:false, error:"まだ合法手があります"};
+        this.to=this.opp(this.to); return {ok:true};
+      }
+      if (!/^[A-H][1-8]$/.test(coord)) return {ok:false, error:"座標が不正です"};
+      const i=this.idx(coord);
+      if (this.b[i]!==".") return {ok:false, error:"既に石があります"};
+      const flips=this.flips(i,this.to);
+      if (!flips.length) return {ok:false, error:"取れません"};
+      this.b[i]=this.to; for(const j of flips) this.b[j]=this.to;
+      this.to=this.opp(this.to);
+      if (this.legalMoves(this.to).length===0) this.to=this.opp(this.to); // 相手に手が無ければ自動パス
+      return {ok:true, placedIdx:i, flips};
+    }
+  }
+
+  /*** 初期状態の取得（script[type="application/json"] or window.INITIAL_STATE or 初期盤） ***/
+  function loadInitialState() {
+    try {
+      return JSON.parse('{{initialState}}');
+    } catch (e) {
+      console.warn("initial-state JSON 解析失敗:", e);
+    }
+      // const tag=document.getElementById("initial-state");
+      // if (tag && tag.textContent?.trim()){
+      //   try { return JSON.parse(tag.textContent); } catch(e){ console.warn("initial-state JSON 解析失敗:", e); }
+      // }
+      if (window.INITIAL_STATE) return window.INITIAL_STATE;
+      return null;
+    }
+
+    /*** UI ***/
+    const engine = new ReversiEngine();
+    let state;
+    try {
+      const ext = loadInitialState();
+      state = ext ? engine.import({board: ext.board, to: ext.to}) : engine.init();
+    } catch (e) {
+      console.error("Import error:", e);
+      state = engine.init();
+    }
+
+    function render(animCoord, clickable = true) {
+      const grid = document.getElementById("grid");
+      const legal = new Set(state.legal);
+      grid.innerHTML = Array.from(state.board).map((ch, i) => {
+        const coord = String.fromCharCode(65 + (i % 8)) + String.fromCharCode(49 + Math.floor(i / 8));
+        const anim = (animCoord === coord) ? " appear" : "";
+        return '<div class="cell" data-coord="' + coord + '" tabindex="0" aria-label="' + coord + '">'
+          + (ch === "B" ? '<div class="disc B' + anim + '"></div>'
+            : (ch === "W" ? '<div class="disc W' + anim + '"></div>'
+              : (legal.has(coord) ? '<div class="hint"></div>' : '')))
+          + '</div>';
+
+      }).join("");
+
+      document.getElementById("turnBadge").textContent = "手番: " + (state.to === "B" ? "黒(B)" : "白(W)");
+      document.getElementById("countB").textContent = String(state.black);
+      document.getElementById("countW").textContent = String(state.white);
+
+      if (clickable) {
+        grid.querySelectorAll(".cell").forEach(el => {
+          el.addEventListener("click", () => onCell(el.getAttribute("data-coord")));
+          el.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter" || ev.key === " ") {
+              ev.preventDefault();
+              onCell(el.getAttribute("data-coord"));
+            }
+          });
+        });
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg || "取れません";
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1200);
+    }
+
+    window.reversiOnClick = function (coord) { /* 外部連携したい場合に差し替え可 */
+      console.log('Clicked:', coord);
+      //  TODO 暗号化してサーバーに通知が望ましいが、ここではtoolの自己呼び出しにしてみる
+      window.parent.postMessage(
+        {
+          type: 'tool',
+          payload: {
+            toolName: "select-user",
+            params: {
+              move: coord,  //  TODO パスやスキップも返す必要がある
+            },
+          },
+        }, '*');
+      window.parent.postMessage(
+        {
+          type: 'notify',
+          payload: {
+            message: 'board updated. user put ' + to + ' at ' + coord,
+          }
+        }, '*');
+    };
+
+    /*** 外向けフック：window.reversiOnClick(coord) があれば先に呼ぶ ***/
+    function onCell(coord) {
+      const res = engine.play(coord);
+      if (!res.ok) {
+        showToast(res.error);
+        return;
+      }
+
+      const fn = window.reversiOnClick;
+      if (typeof fn === "function") {
+        try {
+          fn(coord);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      state = engine.export();
+      render(coord, false); // 置いた石に出現アニメ
+    }
+
+  /*** 初期描画 ***/
+  render()
+</script>
+{{postMessageUISizeChange}}
+</body>
+</html>
