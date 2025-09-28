@@ -25,6 +25,10 @@ export class MyMCP extends McpAgent<Env, State, {}> {
     gameSession: crypto.randomUUID()
   };
 
+  async onStateUpdate(state: State) {
+    console.log("state updated", state);
+  }
+
   async init() {
     this.server.tool(
       "get-board",
@@ -73,6 +77,7 @@ export class MyMCP extends McpAgent<Env, State, {}> {
           const res = engine.playBlack(move)
           if(res.ok) {
             this.state.board = engine.export()
+            this.setState({ ...this.state });
           } else {
             console.log('ng:',res.error)
             return {
@@ -141,6 +146,7 @@ export class MyMCP extends McpAgent<Env, State, {}> {
           const res = engine.playWhite(move)
           if(res.ok) {
             this.state.board = engine.export()
+            this.setState({ ...this.state });
           } else {
             console.log('ng:',res.error)
             return {
