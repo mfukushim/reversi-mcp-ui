@@ -1,4 +1,4 @@
-# Building a Remote MCP Server on Cloudflare (Without Auth)
+# Simple Reversi for MCP-UI
 
 This example allows you to deploy a remote MCP server that doesn't require authentication on Cloudflare Workers. 
 
@@ -40,7 +40,7 @@ Update with this configuration:
       "command": "npx",
       "args": [
         "mcp-remote",
-        "http://localhost:8787/sse"  // or remote-mcp-server-authless.your-account.workers.dev/sse
+        "http://localhost:8787/sse"  
       ]
     }
   }

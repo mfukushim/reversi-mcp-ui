@@ -10,7 +10,7 @@
     "start": "wrangler dev",
     "cf-typegen": "wrangler types",
     "type-check": "tsc --noEmit",
-    "inspect": "npx @modelcontextprotocol/inspector --config mcp-config.json --server mcp-aharvard"
+    "inspect": "npx @modelcontextprotocol/inspector --config mcp-config.json --server reversi"
   },
   "dependencies": {
     "@mcp-ui/server": "^5.10.0",

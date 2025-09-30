@@ -1,12 +1,9 @@
-// import { Hono } from "hono";
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-// import { z } from "zod";
 import {createUIResource} from "@mcp-ui/server";
 import {generateReversiHTMLFromState} from "./rule-logic/boardDrawer.js";
 import {ExportState, ReversiEngine} from "./rule-logic/reversi.js";
 import {z} from "zod";
-import {startHtml} from "./rule-logic/start";
 
 type State = {
   board: ExportState;
@@ -68,7 +65,7 @@ export class MyMCP extends McpAgent<Env, State, {}> {
       {
         move: z.string(),
         //  TODO 暗号化またはサイン要  つまり 公開鍵をAIに知られない方法で送らなければならない サインのみならAIに漏れる形でもよい? AIが嘘の公開鍵をMCPに送る可能性があるのでサインでもダメか。。
-        gameSession: z.string(), //  TODO 通信時に使用
+        gameSession: z.string().optional(), //  TODO 通信時に使用
       },
       async ({move}) => {
         try {

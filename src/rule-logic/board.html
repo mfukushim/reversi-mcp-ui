@@ -272,13 +272,14 @@
           },
         },
       }, '*');
-    window.parent.postMessage(
-      {
-        type: 'notify',
-        payload: {
-          message: 'Board updated. User put ' + to + ' at ' + coord,
-        }
-      }, '*');
+    //  連続で通知は送れないようだ toolの呼び出しの後から呼び出させる。。
+    // window.parent.postMessage(
+    //   {
+    //     type: 'notify',
+    //     payload: {
+    //       message: 'Board updated. User put ' + to + ' at ' + coord,
+    //     }
+    //   }, '*');
   };
 
   /*** 外向けフック：window.reversiOnClick(coord) があれば先に呼ぶ ***/
