@@ -14,8 +14,7 @@ The structure is relatively simple, so we believe it can be used as a reference 
 
 ## Available MCP clients
 
-Since there is currently no MCP client that fully supports MCP-UI UI Actions,
-my own Avatar-Shell works the most reliably so far.
+Currently, there is no MCP client that fully supports MCP-UI UI Actions, so while my Avatar-Shell is easy to understand, there are still many unstable aspects.
 
 - [Avatar-Shell](https://github.com/mfukushim/avatar-shell)
 
@@ -27,11 +26,11 @@ I believe that once the implementation of UI Actions is finalized, it will be po
 
 ## はじめかた
 
-リバーシMCP-UIは、CloudFlare AI Agent のMCPAgentの仕組みの上で作られており、Streamable-http接続に対応しています。
+Reversi MCP-UI is built on the MCPAgent mechanism of CloudFlare AI Agent and supports Streamable-http connections.
 
-Cloudflare workersでのデモを以下で公開しています。
+A demo using Cloudflare workers is available below.
 
-各MCPクライアントで以下のMCP設定を行ってください。
+Please configure the following MCP settings on each MCP client.
 
 ```json
 {
@@ -44,72 +43,72 @@ Cloudflare workersでのデモを以下で公開しています。
 }
 ```
 
-正常にreversiを接続後、「リバーシの盤面を見せてください」で実行可能です。  
-AIの性能によっては「ユーザは黒の手番を指示します。アシスタントは白の手番を実行してください。」の指示も必要な場合があります。
+After successfully connecting to Reversi, you can start the game by clicking "Start the Reversi game."
+Depending on the AI's performance, you may also need to instruct the user to "instruct Black to play. Assistant to play White's turn."
 
 
-## tool関数とUI Actions
+## Tool Functions and UI Actions
 
 #### tool functions
 
+- new-game  
+  Displays the initial game screen. If the game is in progress, the initial screen will be displayed.
 - get-board  
-  リバーシ盤面を取得する。最初に実行時はゲーム初期画面を表示します。
+  Get the Reversi board. When you first run it, the initial game screen will be displayed.
 - select-user  
-  黒石(ユーザ手番)の石を配置します。座標はA1～H8で指定します。手番をパスするしかないときは PASS で呼び出します。ゲームを終わらせる/リセットする場合は NEW で呼び出します。  
-  UI Actionsが実装されている環境では使わずにゲームできます。その場合MCPクライアントでselect-userのtool関数を呼び出せない設定にすればAIがユーザ手番を操作できません。
+  Places the black stone (user turn). Coordinates are specified from A1 to H8. If there is no choice but to pass the turn, call it with PASS. To end/reset the game, call it with NEW.
+  In environments where UI Actions are implemented, you can play the game without using them. In that case, if you configure the MCP client so that the select-user tool function cannot be called, the AI will not be able to control the user turn.
 - select-assistant  
-  白石(AI手番)の石を配置します。座標はA1-H8で指定します。手番をパスするしかないときは PASS で呼び出します。
+  Place the white stone (AI turn). The coordinates are A1-H8. If you have no choice but to pass your turn, call it with PASS.
 
 
 #### UI Actions
 
-UI Actionは現時点では未実装、途中実装のMCPクライアントが多いです。現状reversi MCP-UIでは以下の挙動をすることを期待しています。
+Currently, many MCP clients have not implemented UI Actions or are in the process of implementing them. Currently, we expect the following behaviors in reversi MCP-UI.
 
 - tool select-user  
-  ユーザがiframe画面内で手番を操作した(黒石を置いた。パスをした。ニューゲームした)  
-  その操作をreversi MCPへAIを介さずに select-userでtool実行することを想定しています。
+  The user controlled the turn within the iframe screen (placed a black stone, passed, started a new game)   
+  It is assumed that this operation will be executed by the select-user tool on the reversi MCP without going through AI.
 
 - notify  
-  ユーザがiframe画面内で何かの操作を行ったことをAIに通知する(黒石を置いた。パスをした。ニューゲームした)。  
-  board updated. user put B at A1 など  
-  これによりAIがなんらかのアクションを行うことを想定しています(ユーザが黒石を置いたことを知る。次にAIが白石を操作する必要がある判断をする など)
+  Notify the AI that the user has performed some action within the iframe screen (placed a black stone, passed, started a new game,board updated. user put B at A1).  
+  This is expected to allow the AI to take some kind of action (such as knowing that the user has placed a black stone, and then deciding that the AI needs to operate a white stone).
 
 
-## プログラム構成
+## Program Structure
 
-MCPサーバー内でリバーシのルール処理を実行します。このためルールの実行にAIは直接介入できません。  
-これにより、AIでよく起きる「AIがルール上のズルをする」ことを抑止してゲームが出来ます。
-
-> 注意  
-> 現在の仕様として、厳格には次のケースでAIがルールに干渉することがあります。
-> - AIがユーザの手番のtool (select-user) を勝手に呼び出してしまう可能性
-> - AIがユーザの手番の操作を読み取ってしまう可能性 (リバーシでは問題になりませんが、打つ手や手札を隠すゲームなどでは対策要)
+Reversi rules are processed within the MCP server. This means that the AI cannot directly intervene in the execution of the rules.
+This prevents the AI from cheating according to the rules, which is a common occurrence with AI.
+> Note  
+> In the current specifications, strictly speaking, AI may interfere with the rules in the following cases:
+> - The AI may call the tool (select-user) on the user's turn without permission.
+> - The AI may be able to read the user's moves during their turn (this is not an issue in Reversi, but it is necessary to take measures in games where you hide your moves or cards).
 >
-> これらはMCPの仕様やMCP-UIの仕様、MCPクライアントの仕様の影響を受けるため、将来的に解決可能かは不明です
+> These issues are affected by the MCP specifications, MCP-UI specifications, and MCP client specifications, so it is unclear whether they can be resolved in the future.
 
-#### ルールロジック
+#### Rule Logic
 
-src/rule-logic/reversi.ts と src/rule-logic/board.html に同じjavascriptのリバーシ処理 class ReversiEngine を配置しています。
-class ReversiEngine はChatGPTに生成を指示したリバーシルール処理です。  
-本来MCP内だけでよいですが、クリック時の挙動判定をかねて同じ処理をhtml内javascriptにも置いています。  
-盤面の状態の決定はMCP内の reversi.ts で行われて、MCPのセッションに保持されます。
+The equivalent JavaScript/Typescript reversi processing class ReversiEngine is located in src/rule-logic/reversi.ts and src/rule-logic/board.html.  
+The class ReversiEngine is the reversi rule processing that ChatGPT is instructed to generate.    
+Ideally, this would only be necessary within the MCP, but the same processing is also placed in the JavaScript within the HTML to determine the behavior when clicked.  
+The state of the board is determined in reversi.ts in MCP and is stored in the MCP session.  
 
-#### 盤面生成
+#### Board generation
 
-盤面の描画処理は src/rule-logic/board.html 内のhtml,css,javascriptにて描画しています。  
-MCP側からの盤面情報に従って盤面情報を表示し、ユーザのクリックに対する簡易モーションを処理しています。
+The board is drawn using html, css, and javascript in src/rule-logic/board.html.  
+The board information is displayed according to the information from the MCP, and simple motions are processed in response to user clicks.
 
-html内に盤面情報を設定するのにsrc/rule-logic/boardDrawer.ts で、簡易的なテンプレート加工処理を行っています。
+To set the board information in the html, simple template processing is performed in src/rule-logic/boardDrawer.ts.  
 
 
-#### MCP処理部
+#### MCP handling
 
-src/index.ts でMCP, MCP-UI処理を行っています。
-ほぼCloudflare MCPAgentのサンプルコードに準拠しています。
+MCP and MCP-UI processing is done in src/index.ts.
+It is almost identical to the Cloudflare MCPAgent sample code.
 
-## ローカルデバッグとデプロイ
+## Local Debugging and Deployment
 
-ほぼCloudflare MCPAgentの実行とデバッグに従います。
+This mostly follows the instructions for running and debugging Cloudflare MCPAgent.  
 
 ```shell
 pnpm install # install

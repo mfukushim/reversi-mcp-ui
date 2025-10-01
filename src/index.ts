@@ -28,8 +28,44 @@ export class MyMCP extends McpAgent<Env, State, {}> {
 
   async init() {
     this.server.tool(
+      "new-game",
+      "Start a new Reversi game",
+      {
+      },
+      async () => {
+        const engine = new ReversiEngine()
+        engine.init()
+        this.state.board = engine.export()
+        this.setState({ ...this.state });
+        return {
+          content: [
+            createUIResource({
+              uri: "ui://reversi-mcp-ui/game-board",
+              content: {
+                type: "rawHtml",
+                htmlString: generateReversiHTMLFromState(this.state.board,this.state.gameSession),
+              },
+              encoding: "text",
+              resourceProps: {
+                annotations: {
+                  audience: ["user"],
+                },
+              },
+            }),
+            {
+              type: "text",
+              text: `current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`,
+              annotations: {
+                audience: ["assistant"],
+              },
+            },
+          ],
+        }
+      },
+    );
+    this.server.tool(
       "get-board",
-      "get a reviersi board",
+      "get a Reversi board",
       {
       },
       async () => {
@@ -50,7 +86,7 @@ export class MyMCP extends McpAgent<Env, State, {}> {
             }),
             {
               type: "text",
-              text: `current turn: ${this.state.board.to}`,
+              text: `current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`,
               annotations: {
                 audience: ["assistant"],
               },
@@ -63,11 +99,12 @@ export class MyMCP extends McpAgent<Env, State, {}> {
       "select-user",
       "user move a stone",
       {
-        move: z.string(),
+        move: z.string().describe('Where to place the black stone. Specify one of A1 to H8. Pass to PASS.'),
         //  TODO 暗号化またはサイン要  つまり 公開鍵をAIに知られない方法で送らなければならない サインのみならAIに漏れる形でもよい? AIが嘘の公開鍵をMCPに送る可能性があるのでサインでもダメか。。
         gameSession: z.string().optional(), //  TODO 通信時に使用
       },
       async ({move}) => {
+        let m = ''
         try {
           const engine = new ReversiEngine()
           engine.import(this.state.board)
@@ -79,9 +116,10 @@ export class MyMCP extends McpAgent<Env, State, {}> {
             console.log('ng:',res.error)
             return {
               content: [
+                this.getUiResource(),
                 {
                   type: "text",
-                  text: `error: ${res.error}`,
+                  text: (move === "PASS" ? 'User made an incorrect choice. Attempting to pass despite having a legal move': 'User made an incorrect choice. User tried to place ' + this.state.board.to + ' on ' + move )+'. error message is "'+res.error+'"',
                   annotations: {
                     audience: ["assistant"],
                   }
@@ -89,6 +127,7 @@ export class MyMCP extends McpAgent<Env, State, {}> {
               ]
             }
           }
+          m = res.pass ? 'User passed' : res.reset ? 'User reset the game.': 'User placed B on ' + move
         } catch (e:any) {
           console.log('error:',e.toString())
           return {
@@ -106,22 +145,10 @@ export class MyMCP extends McpAgent<Env, State, {}> {
 
         return {
           content:[
-            createUIResource({
-              uri: "ui://reversi-mcp-ui/game-board",
-              content: {
-                type: "rawHtml",
-                htmlString: generateReversiHTMLFromState(this.state.board,this.state.gameSession),
-              },
-              encoding: "text",
-              resourceProps: {
-                annotations: {
-                  audience: ["user"],
-                },
-              },
-            }),
+            this.getUiResource(),
             {
               type: "text",
-              text: `current board: ${this.state.board}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`,
+              text: 'Board updated. '+ m +`. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`,
               annotations: {
                 audience: ["assistant"],
               },
@@ -134,7 +161,7 @@ export class MyMCP extends McpAgent<Env, State, {}> {
       "select-assistant",
       "assistant move a stone",
       {
-        move: z.string(),
+        move: z.string().describe('Where to place the white stone. Specify one of A1 to H8. Pass to PASS.'),
       },
       async ({move}) => {
         try {
@@ -148,9 +175,9 @@ export class MyMCP extends McpAgent<Env, State, {}> {
             console.log('ng:',res.error)
             return {
               content: [
-                {
+                this.getUiResource(),                {
                   type: "text",
-                  text: `error: ${res.error}`,
+                  text: `error: ${res.error}` +`. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`,
                   annotations: {
                     audience: ["assistant"],
                   }
@@ -175,22 +202,10 @@ export class MyMCP extends McpAgent<Env, State, {}> {
 
         return {
           content:[
-            createUIResource({
-              uri: "ui://reversi-mcp-ui/game-board",
-              content: {
-                type: "rawHtml",
-                htmlString: generateReversiHTMLFromState(this.state.board,this.state.gameSession),
-              },
-              encoding: "text",
-              resourceProps: {
-                annotations: {
-                  audience: ["user"],
-                },
-              },
-            }),
+            this.getUiResource(),
             {
               type: "text",
-              text: `current board: ${this.state.board}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`,
+              text: `current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`,
               annotations: {
                 audience: ["assistant"],
               },
@@ -199,6 +214,22 @@ export class MyMCP extends McpAgent<Env, State, {}> {
         }
       }
     )
+  }
+
+  private getUiResource() {
+    return createUIResource({
+      uri: "ui://reversi-mcp-ui/game-board",
+      content: {
+        type: "rawHtml",
+        htmlString: generateReversiHTMLFromState(this.state.board, this.state.gameSession),
+      },
+      encoding: "text",
+      resourceProps: {
+        annotations: {
+          audience: ["user"],
+        },
+      },
+    });
   }
 }
 

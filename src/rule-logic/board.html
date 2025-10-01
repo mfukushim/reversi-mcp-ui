@@ -76,6 +76,17 @@
       display: grid; grid-template-rows: repeat(8, 1fr); font-size: clamp(10px, 2.2vw, 14px); text-align: left;
     }
 
+    /* コマンドボタン */
+    .controls{
+      display:flex; gap:8px; align-items:center; margin-top:10px; flex-wrap: wrap;
+    }
+    .CmdBtn{
+      padding: 8px 12px; border: 0; border-radius: 10px; cursor: pointer; font-weight: 700;
+      background:#ffe082; box-shadow: 0 2px 6px rgba(0,0,0,.12), inset 0 -2px 0 rgba(0,0,0,.12);
+    }
+    .CmdBtn:hover{ filter: brightness(1.04); }
+    .CmdBtn.new{ background:#bbdefb; }
+
     #toast{
       position:fixed; left:50%; bottom: 18px; transform: translateX(-50%);
       background:#333; color:#fff; padding:6px 12px; border-radius: 8px;
@@ -89,6 +100,11 @@
 <article class="wrap">
   <div class="header">
     <div class="badge" id="turnBadge">手番: -</div>
+    <div class="controls">
+    <button id="btnPass" class="CmdBtn" type="button" title="合法手が無いときのみ有効">PASS</button>
+    <button id="btnNew"  class="CmdBtn new" type="button" title="新しい対局を開始">NEW</button>
+  </div>
+
     <div class="counts">
       <span class="disc b"></span><strong id="countB">0</strong>
       <span style="color:#999">:</span>
@@ -105,7 +121,7 @@
     <div class="grid" id="grid"></div>
   </div>
 </article>
-
+</div>
 <div id="toast">取れません</div>
 
 <script id="initial-state" type="application/json">
@@ -170,11 +186,21 @@
       }
       return res;
     }
-    play(coord){
+    playBlack(move) {
+      return this.play("B", move);
+    }
+    play(to,coord){
+      if (coord === "NEW"){
+        this.init(); // 盤面初期化 手番は黒
+        return { ok:true, reset:true };
+      }
+      if (to !== this.to) {
+        return { ok: false, error: "Invalid turn" }
+      }
       if (coord==="PASS"){
         const leg=this.legalMoves(this.to);
         if(leg.length) return {ok:false, error:"There are still legal options."};
-        this.to=this.opp(this.to); return {ok:true};
+        this.to=this.opp(this.to); return {ok:true, pass:true};
       }
       if (!/^[A-H][1-8]$/.test(coord)) return {ok:false, error:"Invalid coordinates."};
       const i=this.idx(coord);
@@ -244,6 +270,9 @@
     });
   }
 
+  document.getElementById("btnPass").onclick = ()=> onCell("PASS");
+  document.getElementById("btnNew").onclick  = ()=> onCell("NEW");
+
   function showToast(msg){
     const t=document.getElementById("toast");
     t.textContent = msg || "Can't do it";
@@ -258,7 +287,7 @@
         {
           type: 'notify',
           payload: {
-            message: 'The user made an incorrect choice. User tried to place ' + to + ' on ' + coord +'. error message is "'+res.error+'"',
+            message: (cood === "PASS" ? 'User made an incorrect choice. Attempting to pass despite having a legal move': 'User made an incorrect choice. User tried to place ' + to + ' on ' + coord )+'. error message is "'+res.error+'"',
           }
         }, '*');
       return
@@ -286,7 +315,7 @@
   /*** 外向けフック：window.reversiOnClick(coord) があれば先に呼ぶ ***/
   function onCell(coord){
 
-    const res = engine.play(coord);
+    const res = engine.playBlack(coord);
     if (!res.ok) {
       showToast(res.error);
       return;

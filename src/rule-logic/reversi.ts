@@ -114,7 +114,11 @@ export class ReversiEngine {
   }
 
   /** 現在手番で座標を打つ（合法でなければ false） */
-  play(to:Color,coord: string): { ok: boolean; error?: string; placedIdx?: number } {
+  play(to:Color,coord: string): { ok: boolean; error?: string; reset?:boolean; pass?:boolean; placedIdx?: number } {
+    if (coord === "NEW"){
+      this.init(); // 盤面初期化 手番は黒
+      return { ok:true, reset:true };
+    }
     if (to !== this.to) {
       return { ok: false, error: "手番不正" }
     }
@@ -122,7 +126,7 @@ export class ReversiEngine {
       const leg = this.legalMoves(this.to);
       if (leg.length) return { ok: false, error: "まだ合法手があります" };
       this.to = this.opp(this.to);
-      return { ok: true };
+      return { ok: true, pass:true };
     }
     if (!/^[A-H][1-8]$/.test(coord)) return { ok: false, error: "座標が不正です" };
     const i = this.idx(coord);
