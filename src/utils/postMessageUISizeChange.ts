@@ -1,3 +1,4 @@
+//  from https://github.com/aharvard/mcp_aharvard.git
 // inform MCP host of UI height
 export const postMessageUISizeChange = `
 <script>

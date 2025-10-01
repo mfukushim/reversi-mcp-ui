@@ -1,15 +1,10 @@
 import {ExportState} from "./reversi";
 import {postMessageUISizeChange} from "../utils/postMessageUISizeChange";
-import * as fs from "node:fs";
 
 
 // reversi_page.ts
 // 1) ReversiEngine に import 機能を追加
 // 2) 外部の ExportState で初期化して描画する HTML を 1本の文字列で生成
-
-type Color = "B" | "W";
-type Cell = "." | "B" | "W";
-
 
 // @ts-ignore
 import board from "./board.html";

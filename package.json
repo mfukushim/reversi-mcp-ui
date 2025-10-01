@@ -1,6 +1,7 @@
 {
-  "name": "remote-mcp-server-authless",
-  "version": "0.0.0",
+  "name": "reversi-mcp-ui",
+  "version": "0.0.1",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
