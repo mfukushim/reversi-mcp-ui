@@ -24,7 +24,7 @@ The game can be played with the following MCP clients, except for the stone clic
 
 I believe that once the implementation of UI Actions is finalized, it will be possible to operate these MCP clients by clicking.
 
-## はじめかた
+## Get started
 
 Reversi MCP-UI is built on the MCPAgent mechanism of CloudFlare AI Agent and supports Streamable-http connections.
 
@@ -43,8 +43,8 @@ Please configure the following MCP settings on each MCP client.
 }
 ```
 
-After successfully connecting to Reversi, you can start the game by clicking "Start the Reversi game."
-Depending on the AI's performance, you may also need to instruct the user to "instruct Black to play. Assistant to play White's turn."
+After successfully connecting to Reversi, you can start the game by clicking "Start a game of Reversi."
+Depending on the AI's performance, you may also need to instruct the user to "It is your turn to play white pieces and place them in the best position."
 
 
 ## Tool Functions and UI Actions
