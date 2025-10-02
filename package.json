@@ -3,9 +3,12 @@
   "version": "0.0.1",
   "license": "MIT",
   "private": true,
+  "module": "src/index.ts",
   "scripts": {
+    "build": "smithery build",
+    "dev": "smithery dev",
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev",
+    "dev:local": "wrangler dev",
     "format": "biome format --write",
     "lint:fix": "biome lint --fix",
     "start": "wrangler dev",
@@ -24,6 +27,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",
+    "@smithery/cli": "^1.4.4",
     "@types/node": "^24.4.0",
     "typescript": "5.9.2",
     "vitest": "^3.2.4",
