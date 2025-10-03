@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://reversi-mcp-ui.daisycodes.workers.dev/.well-known/mcp-config",
+  "title": "MCP Session Configuration",
+  "description": "Configuration for connecting to this MCP server",
+  "x-query-style": "dot+bracket",
+  "type": "object",
+  "properties": {
+  },
+  "additionalProperties": false
+}
