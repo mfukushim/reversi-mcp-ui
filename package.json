@@ -9,6 +9,7 @@
     "dev": "smithery dev",
     "deploy": "wrangler deploy",
     "dev:local": "wrangler dev",
+    "docker": "wrangler dev --local=true",
     "format": "biome format --write",
     "lint:fix": "biome lint --fix",
     "start": "wrangler dev",

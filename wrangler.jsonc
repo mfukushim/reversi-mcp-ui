@@ -38,7 +38,11 @@
       "type": "Text",
       "globs": ["**/*.html"]
     }
-  ]
+  ],
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "single-page-application"
+  }
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
