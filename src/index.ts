@@ -75,7 +75,7 @@ export class MyMCP extends McpAgent<Env, State, {}> {
           console.log('error:', e.toString())
           return {content: [{type: "text", text: `error: ${e.message}`, annotations: {audience: ["assistant"],}}]}
               }
-        return this.makeMessage('Board updated. The game board is displayed to the user. ' + m + `. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`)
+        return this.makeMessage('Board updated. Please do not repost the game board as it has already been shown to the user. ' + m + `. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant must place the white stone using "select-assistant".' : 'User\'s turn.'}`)
       }
     );
     this.server.tool(
@@ -94,13 +94,13 @@ export class MyMCP extends McpAgent<Env, State, {}> {
             this.setState({...this.state});
           } else {
             console.log('ng:', res.error)
-            return this.makeMessage(`The choice is incorrect. ${res.error}` + `. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`)
+            return this.makeMessage(`The choice is incorrect. ${res.error}` + `. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant must place the white stone using "select-assistant".' : 'User\'s turn.'}`)
           }
         } catch (e: any) {
           console.log('error:', e.toString())
           return {content: [{type: "text", text: `error: ${e.message}`, annotations: {audience: ["assistant"],}}]}
               }
-        return this.makeMessage(`Board updated. The game board is displayed to the user. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`)
+        return this.makeMessage(`Board updated. Please do not repost the game board as it has already been shown to the user. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant must place the white stone using "select-assistant".' : 'User\'s turn.'}`)
       }
     )
   }
