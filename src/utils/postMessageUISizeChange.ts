@@ -15,14 +15,14 @@ function getActualHeight() {
   const rect = container.getBoundingClientRect();
   const height = rect.height;
   
-  console.log('mcp-ui-container height:', height);
+  // console.log('mcp-ui-container height:', height);
   
   return { container, height };
 }
 
 function postHeight(info) {
   const { container, height } = getActualHeight();
-  console.log("posting height", container, height, info);
+  // console.log("posting height", container, height, info);
   
   if (height > 0) {
     window.parent.postMessage({ 
@@ -54,7 +54,7 @@ async function initializeHeight() {
   
   // Try multiple times with delays
   for (let i = 0; i < 3; i++) {
-    console.log('Height attempt ' + (i + 1) + '/3');
+    // console.log('Height attempt ' + (i + 1) + '/3');
     postHeight('initial attempt ' + (i + 1));
     
     // Wait a bit before next attempt
@@ -68,7 +68,7 @@ async function initializeHeight() {
 function setupResizeObserver() {
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) { 
-      console.log("Resize detected:", entry.target, entry.contentRect);
+      // console.log("Resize detected:", entry.target, entry.contentRect);
       postHeight("triggered by resize observer");
     }
   });
