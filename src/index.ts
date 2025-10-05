@@ -38,7 +38,7 @@ export class MyMCP extends McpAgent<Env, State, {}> {
         engine.init()
         this.state.board = engine.export()
         this.setState({...this.state});
-        return this.makeMessage(`current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`)
+        return this.makeMessage(`Started Reversi. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant\'s turn.' : 'User\'s turn.'}`)
       },
     );
     this.server.tool(
@@ -75,7 +75,8 @@ export class MyMCP extends McpAgent<Env, State, {}> {
           console.log('error:', e.toString())
           return {content: [{type: "text", text: `error: ${e.message}`, annotations: {audience: ["assistant"],}}]}
               }
-        return this.makeMessage('Board updated. Please do not repost the game board as it has already been shown to the user. ' + m + `. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant must place the white stone using "select-assistant".' : 'User\'s turn.'}`)
+        return this.makeMessage(`The user has already placed the next stone, so the board state has changed. Assistant\'s turn now. Next, Please devise a position for the next white stone and put a white stone by select-assistant(e.g., {"move":"A1"}). The current board state is "${JSON.stringify(this.state.board)}".`)
+        // return this.makeMessage('Board updated. Please do not repost the game board as it has already been shown to the user. ' + m + `. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant must place the white stone using "select-assistant".' : 'User\'s turn.'}`)
       }
     );
     this.server.tool(

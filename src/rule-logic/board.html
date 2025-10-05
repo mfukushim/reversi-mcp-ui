@@ -279,7 +279,7 @@
     t.classList.add("show");
     setTimeout(()=>t.classList.remove("show"), 1200);
   }
-  window.reversiOnClick = function (coord,res) { /* 外部連携したい場合に差し替え可 */
+  window.reversiOnClick = function (coord,res,exp) { /* 外部連携したい場合に差し替え可 */
     console.log('Clicked:', coord,res);
     //  TODO 暗号化してサーバーに通知が望ましいが、ここではtoolの自己呼び出しにしてみる
     if(!res.ok) {
@@ -302,14 +302,15 @@
           },
         },
       }, '*');
-    //  連続で通知は送れないようだ toolの呼び出しの後から呼び出させる。。→AIの指摘では連続で送れるらしい。。
-    window.parent.postMessage(
-      {
-        type: 'notify',
-        payload: {
-          message: 'Board updated. User put B at ' + coord,
-        }
-      }, '*');
+    //  連続で通知は送れないようだ toolの呼び出しの後から呼び出させる。。→AIの指摘では連続で送れるらしい。。→返すレスポンスはMCP側から返さないとシーケンスが合わない。。
+    // window.parent.postMessage(
+    //   {
+    //     type: 'notify',
+    //     payload: {
+    //       message: `The user has already placed the next stone, so the board state has changed. Next, Please devise a position for the next white stone and put a white stone by put-white-stone(e.g., {"move":"A1"}). The current board state is "${JSON.stringify(exp)}".`
+    //       // message: 'Board updated. User put B at ' + coord,
+    //     }
+    //   }, '*');
     // setTimeout(()=>{
     // }, 1200);
   };
@@ -322,8 +323,9 @@
       showToast(res.error);
       return;
     }
+    const exp = engine.export();
     const fn = window.reversiOnClick;
-    if (typeof fn === "function") { try { fn(coord,res); } catch(e){ console.error(e); } }
+    if (typeof fn === "function") { try { fn(coord,res,exp); } catch(e){ console.error(e); } }
 
     state = engine.export();
     render(coord); // 置いた石に出現アニメ
