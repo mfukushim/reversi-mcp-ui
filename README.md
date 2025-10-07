@@ -26,6 +26,10 @@ The game can be played with the following MCP clients, except for the stone clic
 
 I believe that once the implementation of UI Actions is finalized, it will be possible to operate these MCP clients by clicking.
 
+> Note: This MCP server outputs HTML data using the ui:// schema for each move. If the MCP client function uses LLM to read the ui: tag, the AI may use a large amount of tokens.  
+> When you first start using it, please check for unexpected token consumption.
+
+
 ## Get started
 
 #### Public Server
