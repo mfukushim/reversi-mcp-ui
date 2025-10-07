@@ -68,15 +68,15 @@ export class MyMCP extends McpAgent<Env, State, {}> {
             this.setState({...this.state});
           } else {
             console.log('ng:', res.error)
-            return this.makeMessage((move === "PASS" ? 'User made an incorrect choice. Attempting to pass despite having a legal move': 'User made an incorrect choice. User tried to place ' + this.state.board.to + ' on ' + move )+'. error message is "'+res.error+'"')
+            return this.makeMessage((move === "PASS" ? 'User made an incorrect choice. Attempting to pass despite having a legal move' : 'User made an incorrect choice. User tried to place ' + this.state.board.to + ' on ' + move) + '. error message is "' + res.error + '"')
           }
-          m = res.pass ? 'User passed' : res.reset ? 'User reset the game.' : 'User placed B on ' + move
+          const assistantTurn = ' Assistant\'s turn now. Next, Please devise a position for the next white stone and put a white stone by select-assistant(e.g., {"move":"A1"}).'
+          m = res.pass ? 'User passed.'+assistantTurn : res.reset ? 'User reset the game. User\'s turn now.' : 'The user has already placed the next stone, so the board state has changed. User placed B on ' + move +'. ' +assistantTurn
         } catch (e: any) {
           console.log('error:', e.toString())
           return {content: [{type: "text", text: `error: ${e.message}`, annotations: {audience: ["assistant"],}}]}
-              }
-        return this.makeMessage(`The user has already placed the next stone, so the board state has changed. Assistant\'s turn now. Next, Please devise a position for the next white stone and put a white stone by select-assistant(e.g., {"move":"A1"}). The current board state is "${JSON.stringify(this.state.board)}".`)
-        // return this.makeMessage('Board updated. Please do not repost the game board as it has already been shown to the user. ' + m + `. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant must place the white stone using "select-assistant".' : 'User\'s turn.'}`)
+        }
+        return this.makeMessage(`${m} The current board state is "${JSON.stringify(this.state.board)}".`)
       }
     );
     this.server.tool(
@@ -100,35 +100,37 @@ export class MyMCP extends McpAgent<Env, State, {}> {
         } catch (e: any) {
           console.log('error:', e.toString())
           return {content: [{type: "text", text: `error: ${e.message}`, annotations: {audience: ["assistant"],}}]}
-              }
+        }
         return this.makeMessage(`Board updated. Please do not repost the game board as it has already been shown to the user. current board: ${JSON.stringify(this.state.board)}.  ${this.state.board.to === "W" ? 'Assistant must place the white stone using "select-assistant".' : 'User\'s turn.'}`)
       }
     )
   }
 
   private makeMessage(message: string) {
-    return {content:[
-      createUIResource({
-        uri: "ui://reversi-mcp-ui/game-board",
-        content: {
-          type: "rawHtml",
-          htmlString: generateReversiHTMLFromState(this.state.board, this.state.gameSession),
-        },
-        encoding: "text",
-        resourceProps: {
-          annotations: {
-            audience: ["user"],
+    return {
+      content: [
+        createUIResource({
+          uri: "ui://reversi-mcp-ui/game-board",
+          content: {
+            type: "rawHtml",
+            htmlString: generateReversiHTMLFromState(this.state.board, this.state.gameSession),
           },
-        },
-      }),
-      {
-        type: "text",
-        text: message,
-        annotations: {
-          audience: ["assistant"],
-        },
-      }
-    ] } as z.infer<typeof CallToolResultSchema>
+          encoding: "text",
+          resourceProps: {
+            annotations: {
+              audience: ["user"],
+            },
+          },
+        }),
+        {
+          type: "text",
+          text: message,
+          annotations: {
+            audience: ["assistant"],
+          },
+        }
+      ]
+    } as z.infer<typeof CallToolResultSchema>
   }
 }
 

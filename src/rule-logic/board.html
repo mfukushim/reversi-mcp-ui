@@ -124,12 +124,13 @@
 </div>
 <div id="toast">取れません</div>
 
-<script id="initial-state" type="application/json">
-  {{initialState}}
-</script>
+<!--<script id="initial-state" type="application/json">-->
+<!--  {{initialState}}-->
+<!--</script>-->
 
 <script>
   const gameSession = '{{gameSession}}';
+  const initialState = '{{initialState}}';
   /*** ReversiEngine（import対応） ***/
   class ReversiEngine {
     constructor(){ this.init(); }
@@ -216,17 +217,21 @@
 
   /*** 初期状態の取得（script[type="application/json"] or window.INITIAL_STATE or 初期盤） ***/
   function loadInitialState(){
-    const tag=document.getElementById("initial-state");
-    if (tag && tag.textContent?.trim()){
-      try { return JSON.parse(tag.textContent); } catch(e){ console.warn("initial-state JSON 解析失敗:", e); }
+    if (initialState){
+      try { return JSON.parse(initialState); } catch(e){ console.warn("initial-state JSON 解析失敗:", e); }
     }
-    if (window.INITIAL_STATE) return window.INITIAL_STATE;
+    // const tag=document.getElementById("initial-state");
+    // if (tag && tag.textContent?.trim()){
+    //   try { return JSON.parse(tag.textContent); } catch(e){ console.warn("initial-state JSON 解析失敗:", e); }
+    // }
+    // if (window.INITIAL_STATE) return window.INITIAL_STATE;
     return null;
   }
 
   /*** UI ***/
   const engine = new ReversiEngine();
   let state;
+  let done = false;
   try {
     const ext = loadInitialState();
     state = ext ? engine.import({ board: ext.board, to: ext.to }) : engine.init();
@@ -292,6 +297,7 @@
         }, '*');
       return
     }
+    done = true;  //  選択反応後一定時間後に盤面を消去してもよいかも?
     window.parent.postMessage(
       {
         type: 'tool',
@@ -302,21 +308,11 @@
           },
         },
       }, '*');
-    //  連続で通知は送れないようだ toolの呼び出しの後から呼び出させる。。→AIの指摘では連続で送れるらしい。。→返すレスポンスはMCP側から返さないとシーケンスが合わない。。
-    // window.parent.postMessage(
-    //   {
-    //     type: 'notify',
-    //     payload: {
-    //       message: `The user has already placed the next stone, so the board state has changed. Next, Please devise a position for the next white stone and put a white stone by put-white-stone(e.g., {"move":"A1"}). The current board state is "${JSON.stringify(exp)}".`
-    //       // message: 'Board updated. User put B at ' + coord,
-    //     }
-    //   }, '*');
-    // setTimeout(()=>{
-    // }, 1200);
   };
 
   /*** 外向けフック：window.reversiOnClick(coord) があれば先に呼ぶ ***/
   function onCell(coord){
+    if(done) return;  //  選択操作後の盤面は無反応にする
 
     const res = engine.playBlack(coord);
     if (!res.ok) {

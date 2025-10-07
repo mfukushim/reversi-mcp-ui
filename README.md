@@ -15,8 +15,10 @@ The structure is relatively simple, so we believe it can be used as a reference 
 ## Available MCP clients
 
 Currently, there is no MCP client that fully supports MCP-UI UI Actions, so while my Avatar-Shell is easy to understand, there are still many unstable aspects.
+nanobot.ai supports UI Actions, so the screen will scroll, but you can play by clicking.  
 
 - [Avatar-Shell](https://github.com/mfukushim/avatar-shell)
+- [nanobot.ai](https://www.nanobot.ai/)  
 
 The game can be played with the following MCP clients, except for the stone clicking operation. Instead of clicking, you can specify the position of the stone to be placed by conversation.
 
@@ -25,6 +27,8 @@ The game can be played with the following MCP clients, except for the stone clic
 I believe that once the implementation of UI Actions is finalized, it will be possible to operate these MCP clients by clicking.
 
 ## Get started
+
+#### Public Server
 
 Reversi MCP-UI is built on the MCPAgent mechanism of CloudFlare AI Agent and supports Streamable-http connections.
 
@@ -43,8 +47,39 @@ Please configure the following MCP settings on each MCP client.
 }
 ```
 
-After successfully connecting to Reversi, you can start the game by clicking "Start a game of Reversi."
+After successfully connecting Reversi, you can start playing by clicking "Play Reversi".  
 Depending on the AI's performance, you may also need to instruct the user to "It is your turn to play white pieces and place them in the best position."
+
+Smithery.ai  
+https://smithery.ai/server/@mfukushim/reversi-mcp-ui  
+
+(The public server may be shut down in the future.)  
+
+#### Local Server  
+
+You can run it as a local server by running wrangler locally.  
+
+```shell
+pnpm run dev # run wrangler local
+
+or 
+
+npm run dev # run wrangler local
+````
+
+Please configure the following MCP settings on each MCP client.  
+
+```json
+{
+  "mcpServers": {
+    "reversi": {
+      "type": "streamable-http",
+      "url": "http://localhost:8787/mcp"
+    }
+  }
+}
+```  
+
 
 
 ## Tool Functions and UI Actions
@@ -69,10 +104,9 @@ Currently, many MCP clients have not implemented UI Actions or are in the proces
 - tool select-user  
   The user controlled the turn within the iframe screen (placed a black stone, passed, started a new game)   
   It is assumed that this operation will be executed by the select-user tool on the reversi MCP without going through AI.
-
-- notify  
-  Notify the AI that the user has performed some action within the iframe screen (placed a black stone, passed, started a new game,board updated. user put B at A1).  
-  This is expected to allow the AI to take some kind of action (such as knowing that the user has placed a black stone, and then deciding that the AI needs to operate a white stone).
+  Extract the text from the execution result of select-user and send it to the AI as user input.  
+  Like "board updated. user put B at A1"  
+  This is expected to allow the AI to take some action (for example, knowing that the user has placed a black stone, then determining that the AI needs to operate a white stone and executing select-assistant).  
 
 
 ## Program Structure
@@ -120,3 +154,7 @@ pnpm run inspector # start inspector
 pnpm run deploy # deploy to cloudflare workers
 
 ```
+
+## Guide (Japanese)  
+
+https://note.com/marble_walkers/n/nfa9fe4bb68df  
