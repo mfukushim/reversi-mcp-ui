@@ -15,8 +15,10 @@ TypeScriptの比較的シンプルな構成にしているので、同様のボ�
 
 MCP-UIのUI Actionsを完全にサポートするMCPクライアントが現時点存在しないため  
 今のところ拙作のAvatar-Shellでの動作がわかりやすいですが、まだ不安定な部分が多いです。  
+nanobot.aiではUI Actionに対応しているため、画面はスクロールしますがクリックでプレイが可能です。  
 
 - [Avatar-Shell](https://github.com/mfukushim/avatar-shell)  
+- [nanobot.ai](https://www.nanobot.ai/) 
 
 石のクリック操作を除けば以下のMCPクライアントでもゲームプレイは可能です。クリックではなく手番で置く石の位置を会話で指定してください。  
 
@@ -25,6 +27,8 @@ MCP-UIのUI Actionsを完全にサポートするMCPクライアントが現時�
 これらのMCPクライアントでもUI Actionsの実装が固まればクリックでの操作が可能になると考えます。  
 
 ## はじめかた 
+
+#### 公開サーバー
 
 リバーシMCP-UIは、CloudFlare AI Agent のMCPAgentの仕組みの上で作られており、Streamable-http接続に対応しています。  
 
@@ -43,9 +47,38 @@ Cloudflare workersでのデモを以下で公開しています。
 }
 ```
 
-正常にreversiを接続後、「リバーシの盤面を見せてください」で実行可能です。  
+正常にreversiを接続後、「リバーシをプレイしてください」で実行可能です。  
 AIの性能によっては「ユーザは黒の手番を指示します。アシスタントは白の手番を実行してください。」の指示も必要な場合があります。  
 
+Smithery.ai では外部サーバーとして以下で公開しています。  
+https://smithery.ai/server/@mfukushim/reversi-mcp-ui 
+
+(公開サーバーは状況によっては停止するかもしれません)
+
+#### ローカルサーバー
+
+wranglerのローカル実行でローカルサーバーとして起動できます。
+
+```shell
+pnpm run dev # run wrangler local
+
+or 
+
+npm run dev # run wrangler local
+````
+
+各MCPクライアントで以下のMCP設定を行ってください。
+
+```json
+{
+  "mcpServers": {
+    "reversi": {
+      "type": "streamable-http",
+      "url": "http://localhost:8787/mcp"
+    }
+  }
+}
+```
 
 ## tool関数とUI Actions
 
@@ -68,12 +101,10 @@ UI Actionは現時点では未実装、途中実装のMCPクライアントが�
 
 - tool select-user  
   ユーザがiframe画面内で手番を操作した(黒石を置いた。パスをした。ニューゲームした)  
-  その操作をreversi MCPへAIを介さずに select-userでtool実行することを想定しています。
-
-- notify  
-  ユーザがiframe画面内で何かの操作を行ったことをAIに通知する(黒石を置いた。パスをした。ニューゲームした)。  
-  board updated. user put B at A1 など  
-  これによりAIがなんらかのアクションを行うことを想定しています(ユーザが黒石を置いたことを知る。次にAIが白石を操作する必要がある判断をする など)  
+  その操作をreversi MCPへAIを介さずに select-userでtool実行することを想定しています。  
+  select-userの実行結果の中からtextを抽出して、それをuserの入力としてAIに送ります。
+  "board updated. user put B at A1" など  
+  これによりAIがなんらかのアクションを行うことを想定しています(ユーザが黒石を置いたことを知る。次にAIが白石を操作する必要がある判断をして select-assistant を実行する など)
 
 
 ## プログラム構成  
@@ -122,3 +153,7 @@ pnpm run inspector # start inspector
 pnpm run deploy # deploy to cloudflare workers
 
 ```
+
+## ガイド  
+
+https://note.com/marble_walkers/n/nfa9fe4bb68df  
