@@ -1,9 +1,13 @@
 {
-  "name": "reversi-mcp-ui",
+  "name": "@mfukushim/reversi-mcp-ui",
   "version": "0.0.2",
   "license": "MIT",
   "private": true,
   "module": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mfukushim/reversi-mcp-ui"
+  },
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",

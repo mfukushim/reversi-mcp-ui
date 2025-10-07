@@ -1,0 +1,57 @@
+name: Node.js Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONALACCESSTOKEN }}
+      - name: Install dependencies
+        uses: ./.github/actions/setup
+      - run: pnpm build
+
+  publish-gpr:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+#        with:
+#          token: ${{ secrets.PERSONALACCESSTOKEN }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - run: pnpm build
+      - run: pnpm publish --provenance --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+#      - name: Install MCP Publisher
+#        run: |
+#          # Build publisher from source (requires Go)
+#          git clone https://github.com/modelcontextprotocol/registry publisher-repo
+#          cd publisher-repo
+#          make publisher
+#          cp cmd/publisher/bin/mcp-publisher ../mcp-publisher
+#          cd ..
+#          chmod +x mcp-publisher
+#
+#      - name: Login to MCP Registry
+#        run: ./mcp-publisher login github-oidc
+#
+#      - name: Publish to MCP Registry
+#        run: ./mcp-publisher publish
