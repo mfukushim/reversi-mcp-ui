@@ -2,6 +2,8 @@
 
 [![smithery badge](https://smithery.ai/badge/@mfukushim/reversi-mcp-ui)](https://smithery.ai/server/@mfukushim/reversi-mcp-ui)  
 
+Japanese / [English](./README.md)
+
 MCP-UIを利用したシンプルなリバーシです。  
 自分の手番(黒固定)を画面上のクリックで操作できます。  
 
@@ -11,6 +13,8 @@ MCP-UIを利用したシンプルなリバーシです。
 このMCPサーバーではゲームルールはMCPが処理するためAIはズルを行うことが困難です(注意: 現状いくつか制約があります)  
 
 TypeScriptの比較的シンプルな構成にしているので、同様のボードゲームも参考にして作ることが出来ると考えます。  
+
+[![riversiVideo](https://img.youtube.com/vi/19Vy0Cpxhnc/0.jpg)](https://youtu.be/19Vy0Cpxhnc?si=VR9PoeleZE2rNPdV&t=10)
 
 
 ## 動作するMCPクライアント  

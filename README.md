@@ -2,6 +2,8 @@
 
 [![smithery badge](https://smithery.ai/badge/@mfukushim/reversi-mcp-ui)](https://smithery.ai/server/@mfukushim/reversi-mcp-ui)  
 
+English / [Japanese](./README_jp.md)  
+
 This is a simple Reversi game that uses MCP-UI.
 You can control your turn (fixed to black) by clicking on the screen.
 
@@ -13,6 +15,7 @@ In this MCP server, the game rules are handled by the MCP, making it difficult f
 
 The structure is relatively simple, so we believe it can be used as a reference for creating similar board games.
 
+[![riversiVideo](https://img.youtube.com/vi/19Vy0Cpxhnc/0.jpg)](https://youtu.be/19Vy0Cpxhnc?si=VR9PoeleZE2rNPdV&t=10)
 
 ## Available MCP clients
 
