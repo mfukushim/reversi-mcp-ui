@@ -1,5 +1,7 @@
 # リバーシ MCP-UI
 
+[![smithery badge](https://smithery.ai/badge/@mfukushim/reversi-mcp-ui)](https://smithery.ai/server/@mfukushim/reversi-mcp-ui)  
+
 MCP-UIを利用したシンプルなリバーシです。  
 自分の手番(黒固定)を画面上のクリックで操作できます。  
 
@@ -49,6 +51,7 @@ Cloudflare workersでのデモを以下で公開しています。
   }
 }
 ```
+> 注意: wrangler起動はDocker container内ではエラーになるようです。  
 
 正常にreversiを接続後、「リバーシをプレイしてください」で実行可能です。  
 AIの性能によっては「ユーザは黒の手番を指示します。アシスタントは白の手番を実行してください。」の指示も必要な場合があります。  

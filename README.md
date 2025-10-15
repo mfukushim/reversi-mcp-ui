@@ -1,5 +1,7 @@
 # Simple Reversi for MCP-UI
 
+[![smithery badge](https://smithery.ai/badge/@mfukushim/reversi-mcp-ui)](https://smithery.ai/server/@mfukushim/reversi-mcp-ui)  
+
 This is a simple Reversi game that uses MCP-UI.
 You can control your turn (fixed to black) by clicking on the screen.
 
@@ -84,7 +86,7 @@ Please configure the following MCP settings on each MCP client.
 }
 ```  
 
-
+> Note: Starting wrangler seems to result in an error within a Docker container.  
 
 ## Tool Functions and UI Actions
 
