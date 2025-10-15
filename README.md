@@ -28,6 +28,7 @@ nanobot.ai supports UI Actions, so the screen will scroll, but you can play by c
 The game can be played with the following MCP clients, except for the stone clicking operation. Instead of clicking, you can specify the position of the stone to be placed by conversation.
 
 - [Goose](https://github.com/block/goose/)
+- [Smithery.ai](https://smithery.ai/server/@mfukushim/reversi-mcp-ui)
 
 I believe that once the implementation of UI Actions is finalized, it will be possible to operate these MCP clients by clicking.
 

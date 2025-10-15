@@ -29,6 +29,7 @@ nanobot.aiではUI Actionに対応しているため、画面はスクロール�
 石のクリック操作を除けば以下のMCPクライアントでもゲームプレイは可能です。クリックではなく手番で置く石の位置を会話で指定してください。  
 
 - [Goose](https://github.com/block/goose/)  
+- [Smithery.ai](https://smithery.ai/server/@mfukushim/reversi-mcp-ui)  
 
 これらのMCPクライアントでもUI Actionsの実装が固まればクリックでの操作が可能になると考えます。  
 
