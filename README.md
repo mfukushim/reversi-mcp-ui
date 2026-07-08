@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/mfukushim-reversi-mcp-ui-badge.png)](https://mseep.ai/app/mfukushim-reversi-mcp-ui)
+
 # Simple Reversi for MCP-UI
 
 [![smithery badge](https://smithery.ai/badge/@mfukushim/reversi-mcp-ui)](https://smithery.ai/server/@mfukushim/reversi-mcp-ui)  
